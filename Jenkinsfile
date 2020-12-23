@@ -1,21 +1,27 @@
-pipeline {
-    agent { image 'perl:5.32.0-buster' }
+pipeline { 
+    environment { 
+        // This registry is important for removing the image after the tests 
+        registry = "CraftedBard/pg-jenkins-perl" 
+    } 
 
-    stages {
-        stage('Prepare') {
-            steps {
-                sh 'echo "Testing Prepare Stage"'
-            }
-        }
+    agent any 
 
-        stage('Test') {
-            steps {
-                sh 'echo "Hello World"'
-                sh '''
-                    echo "Multiline shell steps works too"
-                    ls -lah
-                '''
-            }
-        }
-    }
-}
+    stages { 
+
+        stage("Test") { 
+            steps { 
+                script { 
+                    // Building the Docker image 
+                       dockerImage = docker.build registry + ":$BUILD_NUMBER" 
+
+                    try { 
+                        dockerImage.inside() { // Extracting the PROJECTDIR environment variable from inside the container 
+                            def PROJECTDIR = sh(script: 'echo \$PROJECTDIR', returnStdout: true).trim() // Copying the project into our workspace 
+                            sh "cp -r '$PROJECTDIR' '$WORKSPACE'" // Running the tests inside the new directory 
+                            dir("$WORKSPACE$PROJECTDIR") { sh "npm test" } 
+                        } 
+                    } finally { 
+                        // Removing the docker image 
+                        sh "docker rmi $registry:$BUILD_NUMBER" 
+                    } 
+               } } } } }
