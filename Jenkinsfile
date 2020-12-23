@@ -1,17 +1,23 @@
 pipeline {
     agent any 
+    environment {
+        IMAGE_NAME = "pg-jenkins-perl"
+    }
     stages {
         stage('Prepare') {
             steps {
                 sh 'echo "Testing Prepare Stage"'
-                sh 'docker build  .'
+                sh 'docker build -t ${IMAGE_NAME}  .'
             }
         }
 
         stage('Test') {
             steps {
                 sh 'echo "Hello World"'
-                sh 'docker --version'
+                sh 'docker run ${IMAGE_NAME}'
+            }
+            finally {
+                sh 'docker rm ${IMAGE_NAME}'
             }
         }
     }
