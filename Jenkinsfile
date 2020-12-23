@@ -1,5 +1,5 @@
 pipeline {
-    agent { dockerfile true }
+    agent { image 'perl:5.32.0-buster' }
 
     stages {
         stage('Prepare') {
