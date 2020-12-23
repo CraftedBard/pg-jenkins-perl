@@ -16,9 +16,6 @@ pipeline {
                 sh 'echo "Hello World"'
                 sh 'docker run ${IMAGE_NAME}'
             }
-            finally {
-                sh 'docker rm ${IMAGE_NAME}'
-            }
         }
     }
 }
